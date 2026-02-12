@@ -415,66 +415,12 @@ def _check_docker_prerequisites():
     """Check Docker prerequisites and config files. Returns (current_dir, compose_file, compose_args)."""
     import shutil
 
+    # 删除docker相关检查
     current_dir = Path(__file__).parent
     compose_file = current_dir / "deepcode_docker" / "docker-compose.yml"
-
-    if not compose_file.exists():
-        print("❌ deepcode_docker/docker-compose.yml not found")
-        print("   Make sure you are running from the DeepCode project root.")
-        sys.exit(1)
-
-    # Check Docker is installed
-    if not shutil.which("docker"):
-        print("❌ Docker not found. Please install Docker Desktop first.")
-        print("   https://www.docker.com/products/docker-desktop")
-        sys.exit(1)
-
-    # Check Docker daemon is running
-    result = subprocess.run(["docker", "info"], capture_output=True, text=True)
-    if result.returncode != 0:
-        print("❌ Docker is installed but not running.")
-        print("   Please start Docker Desktop and try again.")
-        sys.exit(1)
-
-    # Check/create secrets file
-    secrets_file = current_dir / "mcp_agent.secrets.yaml"
-    if not secrets_file.exists():
-        example = current_dir / "mcp_agent.secrets.yaml.example"
-        if example.exists():
-            print("⚠️  mcp_agent.secrets.yaml not found.")
-            print("   Creating from template...")
-            import shutil as sh
-
-            sh.copy2(example, secrets_file)
-            print(f"   ✅ Created {secrets_file}")
-            print("")
-            print("   ⚠️  Please edit mcp_agent.secrets.yaml and fill in your API keys:")
-            print(f"      {secrets_file}")
-            print("")
-            print(
-                "   At least ONE LLM provider key is required (OpenAI/Anthropic/Google)."
-            )
-            print("   Then run 'deepcode' again.")
-            sys.exit(0)
-        else:
-            print(
-                "❌ mcp_agent.secrets.yaml not found. Please create it with your API keys."
-            )
-            sys.exit(1)
-
-    # Check config file
-    config_file = current_dir / "mcp_agent.config.yaml"
-    if not config_file.exists():
-        print("❌ mcp_agent.config.yaml not found.")
-        print("   This file should be in the project root.")
-        sys.exit(1)
-
-    # Ensure data directories exist
+    compose_args = ["docker", "compose", "-f", str(compose_file)]
     for d in ["deepcode_lab", "uploads", "logs"]:
         (current_dir / d).mkdir(exist_ok=True)
-
-    os.chdir(current_dir)
-    compose_args = ["docker", "compose", "-f", str(compose_file)]
 
     return current_dir, compose_file, compose_args
 
@@ -664,7 +610,7 @@ def main():
     else:
         # Default (no arguments) → Docker
         print_banner()
-        launch_docker()
+        # launch_docker()
         return
 
     # --- Local launch (only reached via --local) ---
